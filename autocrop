@@ -1,0 +1,107 @@
+#!/usr/bin/perl
+use Image::Magick;
+use File::Temp qw/tempfile/;
+use File::Spec;	# For tmpdir. I shouldn't need it, but File::Temp is broken.
+use Gtk2;
+use warnings;
+use strict;
+
+my $VERSION = 0.2;
+
+Gtk2->init;
+
+my ($f) = @ARGV;
+usage() if !$f or $f =~ m/^--?[hv\?]/;
+my ($suffix) = $f =~ m/(\.[a-zA-Z0-9]+)$/;
+my (undef,$tmpfile) = tempfile('acXXXXXX', SUFFIX => $suffix,
+			       OPEN => 0, DIR => File::Spec->tmpdir);
+
+my $fuzz = 5;
+my $image;
+my $autoupdatecount = 0;
+
+my $d = Gtk2::Dialog->new('Autocrop Preview',undef,'modal',
+			  'gtk-cancel' => 'cancel',
+			  'gtk-save' => 'ok');
+
+# Viewer
+my $imageview = Gtk2::Image->new();
+$d->vbox->pack_start($imageview,1,1,0);
+$imageview->signal_connect('expose-event',\&textureViewer);
+
+# Separator
+$d->vbox->add(Gtk2::HSeparator->new());
+
+# Scale container
+my $sbox = Gtk2::HBox->new(0,0);
+$sbox->pack_start(Gtk2::Label->new('Fuzz: '),0,0,0);
+
+# Scale
+my $adjustment = Gtk2::Adjustment->new($fuzz,0,100,1,5,10);
+my $scale = Gtk2::HScale->new($adjustment);
+#$scale->signal_connect('format-value',sub { my ($w,$s) = @_; return $s.'%' });
+$scale->set_digits(0);
+$scale->set_value_pos('left');
+$sbox->pack_start($scale,1,1,0);
+
+# Refresh
+if ( 0 ) {				# Manual refresh
+    my $reload = Gtk2::Button->new_from_stock('gtk-refresh');
+    $reload->signal_connect('clicked',\&manualUpdate);
+    $sbox->pack_start($reload,0,0,0);
+}
+# Automatic refresh
+else { $adjustment->signal_connect('value-changed',\&autoUpdate) }
+
+# Pack and run
+$d->vbox->pack_start($sbox,0,0,0);
+manualUpdate();
+$d->show_all;
+my $r = $d->run;
+if ( $r eq 'ok' ) { $image->Write($f) }
+
+sub updateImage {
+    $image=Image::Magick->new;
+    my $x = $image->Read($f);
+    die $x if $x;
+    my ($w,$h) = $image->Get('width','height');
+    $image->Set(fuzz => $fuzz.'%');
+    $image->Trim();
+    $image->Write($tmpfile);
+    $imageview->set_size_request($w,$h);
+    $imageview->set_from_file($tmpfile);
+}
+sub runUpdate {
+    $autoupdatecount--;
+    return if $autoupdatecount != 0;
+
+    $fuzz = $scale->get_value();
+    updateImage();
+}
+sub autoUpdate {
+    $autoupdatecount++;
+    Glib::Timeout->add(700, sub { main::runUpdate(); return 0 });
+}
+sub manualUpdate {
+    $autoupdatecount++;
+    runUpdate();
+}
+sub usage {
+    print <<END;
+autocrop version $VERSION
+Usage: autocrop <file>
+END
+    exit(1);
+}
+sub textureViewer {
+    my $win = $imageview->window;
+    my ($fgc) = $imageview->get_style()->fg_gc('normal');
+    my ($bgc) = $imageview->get_style()->bg_gc('normal');
+    my ($w,$h) = $imageview->get_size_request();
+    #$win->draw_rectangle($fgc, 1, 0, 0,$w  , $h  );
+    #$win->draw_rectangle($bgc, 1, 1, 1,$w-2, $h-2);
+    $win->draw_rectangle($bgc, 1, 0, 0,$w  , $h  );
+    $win->draw_lines($fgc,0,0,$w,$h);
+    $win->draw_lines($fgc,0,$h,$w,0);
+    return 0;
+}
