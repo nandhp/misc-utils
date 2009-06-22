@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+use Getopt::Std;
+my %opts = (f=>':');
+
+my @waitarg = ();
+while ( scalar(@waitarg) || $ARGV[0] =~ m/^\-([a-zA-Z]+)$/ ) {
+    my $arg = shift(@ARGV);
+    if ( scalar(@waitarg) ) {
+	$opts{shift(@waitarg)} = $arg;
+	next;
+    }
+    foreach ( split('',$1) ) {
+	if ( $opts{$_} eq ':' ) {
+	    push @waitarg, $_;
+	}
+	else { $opts{$_}++ }
+    }
+}
+if ( !scalar(@ARGV) || $opts{h} ) {
+    print STDERR <<END;
+Usage: expr [options] [expression]
+
+-h	Help
+-b	Binary output
+-o	Octal output
+-x	Hex output
+-f [n]	[Fixed] float
+END
+exit(0);
+}
+
+my $out = eval join(' ',@ARGV);
+if ( $opts{x} ) { printf("0x%08X\n",$out) }
+elsif ( $opts{o} ) { printf("0%o\n",$out) }
+elsif ( $opts{b} ) { printf("0b%b\n",$out) }
+elsif ( defined($opts{f}) && $opts{f} ne ':')
+  { printf("%0.".$opts{f}."f\n",$out) }
+else { print "$out\n" }
