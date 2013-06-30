@@ -1,0 +1,3 @@
+#!/usr/bin/perl -nl
+use CGI qw/unescape/;
+print unescape $_;
