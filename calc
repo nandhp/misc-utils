@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+#
+# calc - Simple command-line calculator
+#
+
 use Getopt::Std;
 my %opts = (f=>':');
 
@@ -18,7 +22,7 @@ while ( scalar(@waitarg) || $ARGV[0] =~ m/^\-([a-zA-Z]+)$/ ) {
 }
 if ( !scalar(@ARGV) || $opts{h} ) {
     print STDERR <<END;
-Usage: expr [options] [expression]
+Usage: calc [options] [expression]
 
 -h	Help
 -b	Binary output
@@ -26,7 +30,7 @@ Usage: expr [options] [expression]
 -x	Hex output
 -f [n]	[Fixed] float
 END
-exit(0);
+    exit(1);
 }
 
 my $out = eval join(' ',@ARGV);
@@ -36,3 +40,4 @@ elsif ( $opts{b} ) { printf("0b%b\n",$out) }
 elsif ( defined($opts{f}) && $opts{f} ne ':')
   { printf("%0.".$opts{f}."f\n",$out) }
 else { print "$out\n" }
+exit(0);
