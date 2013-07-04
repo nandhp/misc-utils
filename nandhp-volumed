@@ -1,0 +1,160 @@
+#!/usr/bin/env python
+
+"""nandhp-volumed - ThinkPad-style volume control with libnotify feedback.
+
+Exposes a DBus interface that can be triggered from the command-line."""
+
+import pynotify
+import gobject
+import argparse
+import dbus, dbus.service, dbus.mainloop.glib
+from alsaaudio import Mixer
+
+# The mixer to use for volume up and down.
+VOL_MIXER = 'Master'
+
+# The mixer to use for volume mute. (You could have this different
+# from vol_mixer if you don't want mute to affect headphones.)
+MUTE_MIXER = 'Speaker'
+
+class Notifier(object):
+    """Manage creation and update of a balloon notification."""
+    def __init__(self):
+        pynotify.init('nandhp-volumed')
+        self.nobj = None
+
+    def notify(self, value, muted):
+        """Display a volume status balloon notification."""
+        numeric_value = min(max(value, -1), 101)
+        display_value = min(max(value, 0), 100)
+        # Compute the textual message and icon for the notification.
+        if muted:
+            icon = 'audio-volume-muted'
+            message = "Muted: %d%%" % display_value
+        else:
+            message = "Volume: %d%%" % display_value
+            if value <= 33:
+                icon = 'audio-volume-low'
+            elif value <= 66:
+                icon = 'audio-volume-medium'
+            else:
+                icon = 'audio-volume-high'
+
+        # Update the currently displayed notification, or create a new one.
+        if self.nobj:
+            self.nobj.update(message, '', icon)
+            self.nobj.set_hint('value', numeric_value)
+        else:
+            self.nobj = pynotify.Notification(message, '', icon)
+            self.nobj.connect('closed', self._onclosed)
+            self.nobj.set_hint('value', numeric_value)
+        self.nobj.show()
+
+    def _onclosed(self, nparam):
+        """Event handler for balloon notification closure."""
+        self.nobj = None
+
+n = None
+
+def mute(do_mute=True):
+    """Set the mute status of the MUTE_MIXER to do_mute."""
+    Mixer(MUTE_MIXER).setmute(do_mute)
+    return Mixer(VOL_MIXER).getvolume()[0], do_mute
+
+def volume(value=None, delta=None):
+    """Unmute and set the volume status of the VOL_MIXER to value,
+    adjusted by delta."""
+    mixer = Mixer(VOL_MIXER)
+    if value is None:
+        value = mixer.getvolume()[0]
+    if delta:
+        value += delta
+    mixer.setvolume(min(max(value, 0), 100))
+    mixer.setmute(False)
+    Mixer(MUTE_MIXER).setmute(False)
+    # Return value -1 or 101 to undicate underflow or overflow, respectively
+    return value, False
+
+# Based on http://www.eurion.net/python-snippets/snippet/Single%20Instance.html
+# By Simon Vermeersch <simonvermeersch@gmail.com>, GPL.
+DBUS_NAME = 'nandhp.volumed'
+DBUS_PATH = '/nandhp/volumed'
+class DBusService(dbus.service.Object):
+    """DBus Service for allowing other applications to trigger volume
+    changes. (For example, one that might be executed in response to a
+    keypress.)"""
+
+    def __init__(self):
+        name = dbus.service.BusName(DBUS_NAME, bus=dbus.SessionBus())
+        dbus.service.Object.__init__(self, name, DBUS_PATH)
+        self.notifier = Notifier()
+
+    @dbus.service.method(dbus_interface=DBUS_NAME)
+    def mute(self):
+        """Mute the volume."""
+        value, muted = mute(True)
+        self.notifier.notify(value, muted)
+
+    @dbus.service.method(dbus_interface=DBUS_NAME)
+    def unmute(self):
+        """Unmute the volume."""
+        value, muted = mute(False)
+        self.notifier.notify(value, muted)
+
+    @dbus.service.method(dbus_interface=DBUS_NAME)
+    def volume(self, value):
+        """Adjust the volume to value."""
+        value, muted = volume(value=value)
+        self.notifier.notify(value, muted)
+        
+    @dbus.service.method(dbus_interface=DBUS_NAME)
+    def volume_adjust(self, delta):
+        """Adjust the volume by delta."""
+        value, muted = volume(delta=delta)
+        self.notifier.notify(value, muted)
+
+ACTIONS = {'mute': lambda: mute(True), 'unmute': lambda: mute(False),
+           'volume': lambda value: volume(value=value),
+           'volume_adjust': lambda delta: volume(delta=delta)}
+
+def main():
+    """Main function for command-line invocation."""
+    class VolAction(argparse.Action):
+        """Generate an action for volume setting"""
+        def __call__(self, parser, namespace, values, option_string=None):
+            assert(len(values) == 1)
+            action = 'volume_adjust' if values[0] and values[0][0] in '-+' \
+                     else 'volume'
+            setattr(namespace, self.dest, [action, int(values[0])])
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mute', action='store_const', dest='action',
+                        const=['mute'], help='Set mute.')
+    parser.add_argument('--unmute', action='store_const', dest='action',
+                        const=['unmute'], help='Unset mute.')
+    parser.add_argument('--volume', nargs=1, action=VolAction, dest='action',
+                        help='Set volume: number, +number, or -number.')
+    result = parser.parse_args()
+    action_func = None
+
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    if dbus.SessionBus().request_name(DBUS_NAME) != \
+            dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
+        if result.action:
+            instance = dbus.SessionBus().get_object(DBUS_NAME, DBUS_PATH)
+            action_func = instance.get_dbus_method(result.action[0])
+        else:
+            print "Daemon already running."
+            return
+    elif result.action:
+        action_func = ACTIONS[result.action[0]]
+    if action_func:
+        action_func(*result.action[1:])
+        return
+
+    # Operate as a daemon
+    service = DBusService()
+    gobject.MainLoop().run()
+
+if __name__ == '__main__':
+    main()
