@@ -1,0 +1,130 @@
+#!/usr/bin/perl
+#
+# generic_icon - Replacement for zenity --notification
+# Display an icon in the notification area
+#
+# Copyright (c) 2013 nandhp <nandhp@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+use Getopt::Long;
+use Gtk2::TrayIcon;
+use warnings;
+use strict;
+
+# Default configuration
+my $SIZE = 24;
+my ($tooltip, $iconname, $visible) = ('Generic Icon', 'warning', 1);
+
+Gtk2->init;
+
+# Parse command-line
+unless ( GetOptions("text=s" => \$tooltip,
+		    "window-icon|icon=s" => \$iconname,
+		    "listen" => \&start_listening,
+		    "size" => \$SIZE,
+		    "notification" => sub {}) ) {
+    print STDERR <<EOF;
+Usage: $0 [--notification] [--window-icon=ICON] [--text=TOOLTIP] [--listen]
+
+Commands accepted while listening:
+    message: <message>
+    tooltip: <tooltip>
+    icon: <filename>
+    visible: {true|false}
+EOF
+    exit(1);
+}
+
+# Supported stock icons
+my %STOCK = ('error' => 1, 'info' => 1, 'question' => 1, 'warning' => 1);
+
+# Initialize widgets
+my $icon= Gtk2::TrayIcon->new("generic_icon");
+my $tipobj = Gtk2::Tooltips->new;
+my $label= Gtk2::Image->new();
+$label->set_size_request($SIZE, $SIZE);
+$icon->add($label);
+$label->show();
+
+# Activate default configuration
+update();
+
+sub update {
+    $tipobj->set_tip($icon, $tooltip);
+    if ( exists($STOCK{$iconname}) ) {
+	$label->set_from_stock("gtk-dialog-$iconname", 'menu');
+    }
+    else {
+	my $pixbuf = Gtk2::Gdk::Pixbuf->new_from_file_at_size($iconname,
+							      $SIZE, $SIZE);
+	$label->set_from_pixbuf($pixbuf);
+    }
+    if ( $visible ) { $icon->show() }
+    else { $icon->hide() }
+}
+
+my $buf = '';
+sub handle_stdin {
+    unless ( sysread(STDIN, $buf, 4096, length($buf)) ) {
+	warn "$0: Shouldn't happen: got false back from sysread\n";
+	$icon->destroy();
+	exit(1);
+    }
+    while ( $buf =~ s/^([^\n]*)\n//gs ) {
+	my $line = $1;
+	my ($cmd, $str) = $line =~ m/^\s*(\w+)\s*:\s*(.+?)\s*$/;
+	if ( !$cmd ) {
+	    warn "$0: Couldn't parse command: '$line'\n";
+	    next;
+	}
+	if ( $cmd eq 'message' ) {
+	    warn "$0: Unimplmented command 'message'\n";
+	}
+	elsif ( $cmd eq 'tooltip' ) {
+	    $tooltip = $str;
+	}
+	elsif ( $cmd eq 'icon' ) {
+	    $iconname = $str;
+	}
+	elsif ( $cmd eq 'visible' ) {
+	    $visible = ($str eq 'false' or !($str+0)) ? 0 : 1;
+	}
+	else {
+	    warn "$0: Unrecognized command '$cmd'\n";
+	}
+	update();
+    }
+    return 1;
+}
+
+sub start_listening {
+    Glib::IO->add_watch(0, 'in', \&handle_stdin); # 0 = STDIN
+}
+
+Gtk2->main;
