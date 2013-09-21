@@ -1,146 +1,153 @@
+<!doctype html>
+<html>
+<head>
+<meta charset=utf-8>
+<title>ASCII</title>
 <style type="text/css">
-.code { text-align: right }
-.demo { font-size: 290%; text-align: center; border-width: 0 1px 1px 0 }
-TD { border-width: 0 0 1px 0 }
-TABLE { font-size: 70%; border-width: 1px 0px 0 1px }
-TABLE, TD, TR { border-style: solid; border-color: black }
+.code { text-align: right; border-right-width: 0; padding: 0 0 0 2px }
+.demo { font-size: 290%; text-align: center; border-left-width: 0; padding: 0 2px 0 0 }
+TD { border: 1px solid black }
+TABLE { font-size: 12px; font-family: monospace; border-collapse: collapse }
 </style>
+</head>
 <body>
-<table cellspacing=0 cellpadding=1>
+<table>
 <tr>
-<td class=code>&amp;#0<br>000<br>0x00</td><td class=demo>&#9216;</td>
-<td class=code>&amp;#8<br>010<br>0x08</td><td class=demo>&#9224;</td>
-<td class=code>&amp;#16<br>020<br>0x10</td><td class=demo>&#9232;</td>
-<td class=code>&amp;#24<br>030<br>0x18</td><td class=demo>&#9240;</td>
-<td class=code>&amp;#32<br>040<br>0x20</td><td class=demo>&#9248;</td>
-<td class=code>&amp;#40<br>050<br>0x28</td><td class=demo>&#40;</td>
-<td class=code>&amp;#48<br>060<br>0x30</td><td class=demo>&#48;</td>
-<td class=code>&amp;#56<br>070<br>0x38</td><td class=demo>&#56;</td>
-<td class=code>&amp;#64<br>100<br>0x40</td><td class=demo>&#64;</td>
-<td class=code>&amp;#72<br>110<br>0x48</td><td class=demo>&#72;</td>
-<td class=code>&amp;#80<br>120<br>0x50</td><td class=demo>&#80;</td>
-<td class=code>&amp;#88<br>130<br>0x58</td><td class=demo>&#88;</td>
-<td class=code>&amp;#96<br>140<br>0x60</td><td class=demo>&#96;</td>
-<td class=code>&amp;#104<br>150<br>0x68</td><td class=demo>&#104;</td>
-<td class=code>&amp;#112<br>160<br>0x70</td><td class=demo>&#112;</td>
-<td class=code>&amp;#120<br>170<br>0x78</td><td class=demo>&#120;</td>
+<td class=code>&amp;#0;<br>\000&nbsp;<br>0x00&nbsp;</td><td class=demo>&#9216;</td>
+<td class=code>&amp;#8;<br>\010&nbsp;<br>0x08&nbsp;</td><td class=demo>&#9224;</td>
+<td class=code>&amp;#16;<br>\020&nbsp;<br>0x10&nbsp;</td><td class=demo>&#9232;</td>
+<td class=code>&amp;#24;<br>\030&nbsp;<br>0x18&nbsp;</td><td class=demo>&#9240;</td>
+<td class=code>&amp;#32;<br>\040&nbsp;<br>0x20&nbsp;</td><td class=demo>&#9248;</td>
+<td class=code>&amp;#40;<br>\050&nbsp;<br>0x28&nbsp;</td><td class=demo>&#40;</td>
+<td class=code>&amp;#48;<br>\060&nbsp;<br>0x30&nbsp;</td><td class=demo>&#48;</td>
+<td class=code>&amp;#56;<br>\070&nbsp;<br>0x38&nbsp;</td><td class=demo>&#56;</td>
+<td class=code>&amp;#64;<br>\100&nbsp;<br>0x40&nbsp;</td><td class=demo>&#64;</td>
+<td class=code>&amp;#72;<br>\110&nbsp;<br>0x48&nbsp;</td><td class=demo>&#72;</td>
+<td class=code>&amp;#80;<br>\120&nbsp;<br>0x50&nbsp;</td><td class=demo>&#80;</td>
+<td class=code>&amp;#88;<br>\130&nbsp;<br>0x58&nbsp;</td><td class=demo>&#88;</td>
+<td class=code>&amp;#96;<br>\140&nbsp;<br>0x60&nbsp;</td><td class=demo>&#96;</td>
+<td class=code>&amp;#104;<br>\150&nbsp;<br>0x68&nbsp;</td><td class=demo>&#104;</td>
+<td class=code>&amp;#112;<br>\160&nbsp;<br>0x70&nbsp;</td><td class=demo>&#112;</td>
+<td class=code>&amp;#120;<br>\170&nbsp;<br>0x78&nbsp;</td><td class=demo>&#120;</td>
 </tr>
-<tr><td class=code>&amp;#1<br>001<br>0x01</td><td class=demo>&#9217;</td>
-<td class=code>&amp;#9<br>011<br>0x09</td><td class=demo>&#9225;</td>
-<td class=code>&amp;#17<br>021<br>0x11</td><td class=demo>&#9233;</td>
-<td class=code>&amp;#25<br>031<br>0x19</td><td class=demo>&#9241;</td>
-<td class=code>&amp;#33<br>041<br>0x21</td><td class=demo>&#33;</td>
-<td class=code>&amp;#41<br>051<br>0x29</td><td class=demo>&#41;</td>
-<td class=code>&amp;#49<br>061<br>0x31</td><td class=demo>&#49;</td>
-<td class=code>&amp;#57<br>071<br>0x39</td><td class=demo>&#57;</td>
-<td class=code>&amp;#65<br>101<br>0x41</td><td class=demo>&#65;</td>
-<td class=code>&amp;#73<br>111<br>0x49</td><td class=demo>&#73;</td>
-<td class=code>&amp;#81<br>121<br>0x51</td><td class=demo>&#81;</td>
-<td class=code>&amp;#89<br>131<br>0x59</td><td class=demo>&#89;</td>
-<td class=code>&amp;#97<br>141<br>0x61</td><td class=demo>&#97;</td>
-<td class=code>&amp;#105<br>151<br>0x69</td><td class=demo>&#105;</td>
-<td class=code>&amp;#113<br>161<br>0x71</td><td class=demo>&#113;</td>
-<td class=code>&amp;#121<br>171<br>0x79</td><td class=demo>&#121;</td>
+<tr><td class=code>&amp;#1;<br>\001&nbsp;<br>0x01&nbsp;</td><td class=demo>&#9217;</td>
+<td class=code>&amp;#9;<br>\011&nbsp;<br>0x09&nbsp;</td><td class=demo>&#9225;</td>
+<td class=code>&amp;#17;<br>\021&nbsp;<br>0x11&nbsp;</td><td class=demo>&#9233;</td>
+<td class=code>&amp;#25;<br>\031&nbsp;<br>0x19&nbsp;</td><td class=demo>&#9241;</td>
+<td class=code>&amp;#33;<br>\041&nbsp;<br>0x21&nbsp;</td><td class=demo>&#33;</td>
+<td class=code>&amp;#41;<br>\051&nbsp;<br>0x29&nbsp;</td><td class=demo>&#41;</td>
+<td class=code>&amp;#49;<br>\061&nbsp;<br>0x31&nbsp;</td><td class=demo>&#49;</td>
+<td class=code>&amp;#57;<br>\071&nbsp;<br>0x39&nbsp;</td><td class=demo>&#57;</td>
+<td class=code>&amp;#65;<br>\101&nbsp;<br>0x41&nbsp;</td><td class=demo>&#65;</td>
+<td class=code>&amp;#73;<br>\111&nbsp;<br>0x49&nbsp;</td><td class=demo>&#73;</td>
+<td class=code>&amp;#81;<br>\121&nbsp;<br>0x51&nbsp;</td><td class=demo>&#81;</td>
+<td class=code>&amp;#89;<br>\131&nbsp;<br>0x59&nbsp;</td><td class=demo>&#89;</td>
+<td class=code>&amp;#97;<br>\141&nbsp;<br>0x61&nbsp;</td><td class=demo>&#97;</td>
+<td class=code>&amp;#105;<br>\151&nbsp;<br>0x69&nbsp;</td><td class=demo>&#105;</td>
+<td class=code>&amp;#113;<br>\161&nbsp;<br>0x71&nbsp;</td><td class=demo>&#113;</td>
+<td class=code>&amp;#121;<br>\171&nbsp;<br>0x79&nbsp;</td><td class=demo>&#121;</td>
 </tr>
-<tr><td class=code>&amp;#2<br>002<br>0x02</td><td class=demo>&#9218;</td>
-<td class=code>&amp;#10<br>012<br>0x0A</td><td class=demo>&#9226;</td>
-<td class=code>&amp;#18<br>022<br>0x12</td><td class=demo>&#9234;</td>
-<td class=code>&amp;#26<br>032<br>0x1A</td><td class=demo>&#9242;</td>
-<td class=code>&amp;#34<br>042<br>0x22</td><td class=demo>&#34;</td>
-<td class=code>&amp;#42<br>052<br>0x2A</td><td class=demo>&#42;</td>
-<td class=code>&amp;#50<br>062<br>0x32</td><td class=demo>&#50;</td>
-<td class=code>&amp;#58<br>072<br>0x3A</td><td class=demo>&#58;</td>
-<td class=code>&amp;#66<br>102<br>0x42</td><td class=demo>&#66;</td>
-<td class=code>&amp;#74<br>112<br>0x4A</td><td class=demo>&#74;</td>
-<td class=code>&amp;#82<br>122<br>0x52</td><td class=demo>&#82;</td>
-<td class=code>&amp;#90<br>132<br>0x5A</td><td class=demo>&#90;</td>
-<td class=code>&amp;#98<br>142<br>0x62</td><td class=demo>&#98;</td>
-<td class=code>&amp;#106<br>152<br>0x6A</td><td class=demo>&#106;</td>
-<td class=code>&amp;#114<br>162<br>0x72</td><td class=demo>&#114;</td>
-<td class=code>&amp;#122<br>172<br>0x7A</td><td class=demo>&#122;</td>
+<tr><td class=code>&amp;#2;<br>\002&nbsp;<br>0x02&nbsp;</td><td class=demo>&#9218;</td>
+<td class=code>&amp;#10;<br>\012&nbsp;<br>0x0A&nbsp;</td><td class=demo>&#9226;</td>
+<td class=code>&amp;#18;<br>\022&nbsp;<br>0x12&nbsp;</td><td class=demo>&#9234;</td>
+<td class=code>&amp;#26;<br>\032&nbsp;<br>0x1A&nbsp;</td><td class=demo>&#9242;</td>
+<td class=code>&amp;#34;<br>\042&nbsp;<br>0x22&nbsp;</td><td class=demo>&#34;</td>
+<td class=code>&amp;#42;<br>\052&nbsp;<br>0x2A&nbsp;</td><td class=demo>&#42;</td>
+<td class=code>&amp;#50;<br>\062&nbsp;<br>0x32&nbsp;</td><td class=demo>&#50;</td>
+<td class=code>&amp;#58;<br>\072&nbsp;<br>0x3A&nbsp;</td><td class=demo>&#58;</td>
+<td class=code>&amp;#66;<br>\102&nbsp;<br>0x42&nbsp;</td><td class=demo>&#66;</td>
+<td class=code>&amp;#74;<br>\112&nbsp;<br>0x4A&nbsp;</td><td class=demo>&#74;</td>
+<td class=code>&amp;#82;<br>\122&nbsp;<br>0x52&nbsp;</td><td class=demo>&#82;</td>
+<td class=code>&amp;#90;<br>\132&nbsp;<br>0x5A&nbsp;</td><td class=demo>&#90;</td>
+<td class=code>&amp;#98;<br>\142&nbsp;<br>0x62&nbsp;</td><td class=demo>&#98;</td>
+<td class=code>&amp;#106;<br>\152&nbsp;<br>0x6A&nbsp;</td><td class=demo>&#106;</td>
+<td class=code>&amp;#114;<br>\162&nbsp;<br>0x72&nbsp;</td><td class=demo>&#114;</td>
+<td class=code>&amp;#122;<br>\172&nbsp;<br>0x7A&nbsp;</td><td class=demo>&#122;</td>
 </tr>
-<tr><td class=code>&amp;#3<br>003<br>0x03</td><td class=demo>&#9219;</td>
-<td class=code>&amp;#11<br>013<br>0x0B</td><td class=demo>&#9227;</td>
-<td class=code>&amp;#19<br>023<br>0x13</td><td class=demo>&#9235;</td>
-<td class=code>&amp;#27<br>033<br>0x1B</td><td class=demo>&#9243;</td>
-<td class=code>&amp;#35<br>043<br>0x23</td><td class=demo>&#35;</td>
-<td class=code>&amp;#43<br>053<br>0x2B</td><td class=demo>&#43;</td>
-<td class=code>&amp;#51<br>063<br>0x33</td><td class=demo>&#51;</td>
-<td class=code>&amp;#59<br>073<br>0x3B</td><td class=demo>&#59;</td>
-<td class=code>&amp;#67<br>103<br>0x43</td><td class=demo>&#67;</td>
-<td class=code>&amp;#75<br>113<br>0x4B</td><td class=demo>&#75;</td>
-<td class=code>&amp;#83<br>123<br>0x53</td><td class=demo>&#83;</td>
-<td class=code>&amp;#91<br>133<br>0x5B</td><td class=demo>&#91;</td>
-<td class=code>&amp;#99<br>143<br>0x63</td><td class=demo>&#99;</td>
-<td class=code>&amp;#107<br>153<br>0x6B</td><td class=demo>&#107;</td>
-<td class=code>&amp;#115<br>163<br>0x73</td><td class=demo>&#115;</td>
-<td class=code>&amp;#123<br>173<br>0x7B</td><td class=demo>&#123;</td>
+<tr><td class=code>&amp;#3;<br>\003&nbsp;<br>0x03&nbsp;</td><td class=demo>&#9219;</td>
+<td class=code>&amp;#11;<br>\013&nbsp;<br>0x0B&nbsp;</td><td class=demo>&#9227;</td>
+<td class=code>&amp;#19;<br>\023&nbsp;<br>0x13&nbsp;</td><td class=demo>&#9235;</td>
+<td class=code>&amp;#27;<br>\033&nbsp;<br>0x1B&nbsp;</td><td class=demo>&#9243;</td>
+<td class=code>&amp;#35;<br>\043&nbsp;<br>0x23&nbsp;</td><td class=demo>&#35;</td>
+<td class=code>&amp;#43;<br>\053&nbsp;<br>0x2B&nbsp;</td><td class=demo>&#43;</td>
+<td class=code>&amp;#51;<br>\063&nbsp;<br>0x33&nbsp;</td><td class=demo>&#51;</td>
+<td class=code>&amp;#59;<br>\073&nbsp;<br>0x3B&nbsp;</td><td class=demo>&#59;</td>
+<td class=code>&amp;#67;<br>\103&nbsp;<br>0x43&nbsp;</td><td class=demo>&#67;</td>
+<td class=code>&amp;#75;<br>\113&nbsp;<br>0x4B&nbsp;</td><td class=demo>&#75;</td>
+<td class=code>&amp;#83;<br>\123&nbsp;<br>0x53&nbsp;</td><td class=demo>&#83;</td>
+<td class=code>&amp;#91;<br>\133&nbsp;<br>0x5B&nbsp;</td><td class=demo>&#91;</td>
+<td class=code>&amp;#99;<br>\143&nbsp;<br>0x63&nbsp;</td><td class=demo>&#99;</td>
+<td class=code>&amp;#107;<br>\153&nbsp;<br>0x6B&nbsp;</td><td class=demo>&#107;</td>
+<td class=code>&amp;#115;<br>\163&nbsp;<br>0x73&nbsp;</td><td class=demo>&#115;</td>
+<td class=code>&amp;#123;<br>\173&nbsp;<br>0x7B&nbsp;</td><td class=demo>&#123;</td>
 </tr>
-<tr><td class=code>&amp;#4<br>004<br>0x04</td><td class=demo>&#9220;</td>
-<td class=code>&amp;#12<br>014<br>0x0C</td><td class=demo>&#9228;</td>
-<td class=code>&amp;#20<br>024<br>0x14</td><td class=demo>&#9236;</td>
-<td class=code>&amp;#28<br>034<br>0x1C</td><td class=demo>&#9244;</td>
-<td class=code>&amp;#36<br>044<br>0x24</td><td class=demo>&#36;</td>
-<td class=code>&amp;#44<br>054<br>0x2C</td><td class=demo>&#44;</td>
-<td class=code>&amp;#52<br>064<br>0x34</td><td class=demo>&#52;</td>
-<td class=code>&amp;#60<br>074<br>0x3C</td><td class=demo>&#60;</td>
-<td class=code>&amp;#68<br>104<br>0x44</td><td class=demo>&#68;</td>
-<td class=code>&amp;#76<br>114<br>0x4C</td><td class=demo>&#76;</td>
-<td class=code>&amp;#84<br>124<br>0x54</td><td class=demo>&#84;</td>
-<td class=code>&amp;#92<br>134<br>0x5C</td><td class=demo>&#92;</td>
-<td class=code>&amp;#100<br>144<br>0x64</td><td class=demo>&#100;</td>
-<td class=code>&amp;#108<br>154<br>0x6C</td><td class=demo>&#108;</td>
-<td class=code>&amp;#116<br>164<br>0x74</td><td class=demo>&#116;</td>
-<td class=code>&amp;#124<br>174<br>0x7C</td><td class=demo>&#124;</td>
+<tr><td class=code>&amp;#4;<br>\004&nbsp;<br>0x04&nbsp;</td><td class=demo>&#9220;</td>
+<td class=code>&amp;#12;<br>\014&nbsp;<br>0x0C&nbsp;</td><td class=demo>&#9228;</td>
+<td class=code>&amp;#20;<br>\024&nbsp;<br>0x14&nbsp;</td><td class=demo>&#9236;</td>
+<td class=code>&amp;#28;<br>\034&nbsp;<br>0x1C&nbsp;</td><td class=demo>&#9244;</td>
+<td class=code>&amp;#36;<br>\044&nbsp;<br>0x24&nbsp;</td><td class=demo>&#36;</td>
+<td class=code>&amp;#44;<br>\054&nbsp;<br>0x2C&nbsp;</td><td class=demo>&#44;</td>
+<td class=code>&amp;#52;<br>\064&nbsp;<br>0x34&nbsp;</td><td class=demo>&#52;</td>
+<td class=code>&amp;#60;<br>\074&nbsp;<br>0x3C&nbsp;</td><td class=demo>&#60;</td>
+<td class=code>&amp;#68;<br>\104&nbsp;<br>0x44&nbsp;</td><td class=demo>&#68;</td>
+<td class=code>&amp;#76;<br>\114&nbsp;<br>0x4C&nbsp;</td><td class=demo>&#76;</td>
+<td class=code>&amp;#84;<br>\124&nbsp;<br>0x54&nbsp;</td><td class=demo>&#84;</td>
+<td class=code>&amp;#92;<br>\134&nbsp;<br>0x5C&nbsp;</td><td class=demo>&#92;</td>
+<td class=code>&amp;#100;<br>\144&nbsp;<br>0x64&nbsp;</td><td class=demo>&#100;</td>
+<td class=code>&amp;#108;<br>\154&nbsp;<br>0x6C&nbsp;</td><td class=demo>&#108;</td>
+<td class=code>&amp;#116;<br>\164&nbsp;<br>0x74&nbsp;</td><td class=demo>&#116;</td>
+<td class=code>&amp;#124;<br>\174&nbsp;<br>0x7C&nbsp;</td><td class=demo>&#124;</td>
 </tr>
-<tr><td class=code>&amp;#5<br>005<br>0x05</td><td class=demo>&#9221;</td>
-<td class=code>&amp;#13<br>015<br>0x0D</td><td class=demo>&#9229;</td>
-<td class=code>&amp;#21<br>025<br>0x15</td><td class=demo>&#9237;</td>
-<td class=code>&amp;#29<br>035<br>0x1D</td><td class=demo>&#9245;</td>
-<td class=code>&amp;#37<br>045<br>0x25</td><td class=demo>&#37;</td>
-<td class=code>&amp;#45<br>055<br>0x2D</td><td class=demo>&#45;</td>
-<td class=code>&amp;#53<br>065<br>0x35</td><td class=demo>&#53;</td>
-<td class=code>&amp;#61<br>075<br>0x3D</td><td class=demo>&#61;</td>
-<td class=code>&amp;#69<br>105<br>0x45</td><td class=demo>&#69;</td>
-<td class=code>&amp;#77<br>115<br>0x4D</td><td class=demo>&#77;</td>
-<td class=code>&amp;#85<br>125<br>0x55</td><td class=demo>&#85;</td>
-<td class=code>&amp;#93<br>135<br>0x5D</td><td class=demo>&#93;</td>
-<td class=code>&amp;#101<br>145<br>0x65</td><td class=demo>&#101;</td>
-<td class=code>&amp;#109<br>155<br>0x6D</td><td class=demo>&#109;</td>
-<td class=code>&amp;#117<br>165<br>0x75</td><td class=demo>&#117;</td>
-<td class=code>&amp;#125<br>175<br>0x7D</td><td class=demo>&#125;</td>
+<tr><td class=code>&amp;#5;<br>\005&nbsp;<br>0x05&nbsp;</td><td class=demo>&#9221;</td>
+<td class=code>&amp;#13;<br>\015&nbsp;<br>0x0D&nbsp;</td><td class=demo>&#9229;</td>
+<td class=code>&amp;#21;<br>\025&nbsp;<br>0x15&nbsp;</td><td class=demo>&#9237;</td>
+<td class=code>&amp;#29;<br>\035&nbsp;<br>0x1D&nbsp;</td><td class=demo>&#9245;</td>
+<td class=code>&amp;#37;<br>\045&nbsp;<br>0x25&nbsp;</td><td class=demo>&#37;</td>
+<td class=code>&amp;#45;<br>\055&nbsp;<br>0x2D&nbsp;</td><td class=demo>&#45;</td>
+<td class=code>&amp;#53;<br>\065&nbsp;<br>0x35&nbsp;</td><td class=demo>&#53;</td>
+<td class=code>&amp;#61;<br>\075&nbsp;<br>0x3D&nbsp;</td><td class=demo>&#61;</td>
+<td class=code>&amp;#69;<br>\105&nbsp;<br>0x45&nbsp;</td><td class=demo>&#69;</td>
+<td class=code>&amp;#77;<br>\115&nbsp;<br>0x4D&nbsp;</td><td class=demo>&#77;</td>
+<td class=code>&amp;#85;<br>\125&nbsp;<br>0x55&nbsp;</td><td class=demo>&#85;</td>
+<td class=code>&amp;#93;<br>\135&nbsp;<br>0x5D&nbsp;</td><td class=demo>&#93;</td>
+<td class=code>&amp;#101;<br>\145&nbsp;<br>0x65&nbsp;</td><td class=demo>&#101;</td>
+<td class=code>&amp;#109;<br>\155&nbsp;<br>0x6D&nbsp;</td><td class=demo>&#109;</td>
+<td class=code>&amp;#117;<br>\165&nbsp;<br>0x75&nbsp;</td><td class=demo>&#117;</td>
+<td class=code>&amp;#125;<br>\175&nbsp;<br>0x7D&nbsp;</td><td class=demo>&#125;</td>
 </tr>
-<tr><td class=code>&amp;#6<br>006<br>0x06</td><td class=demo>&#9222;</td>
-<td class=code>&amp;#14<br>016<br>0x0E</td><td class=demo>&#9230;</td>
-<td class=code>&amp;#22<br>026<br>0x16</td><td class=demo>&#9238;</td>
-<td class=code>&amp;#30<br>036<br>0x1E</td><td class=demo>&#9246;</td>
-<td class=code>&amp;#38<br>046<br>0x26</td><td class=demo>&#38;</td>
-<td class=code>&amp;#46<br>056<br>0x2E</td><td class=demo>&#46;</td>
-<td class=code>&amp;#54<br>066<br>0x36</td><td class=demo>&#54;</td>
-<td class=code>&amp;#62<br>076<br>0x3E</td><td class=demo>&#62;</td>
-<td class=code>&amp;#70<br>106<br>0x46</td><td class=demo>&#70;</td>
-<td class=code>&amp;#78<br>116<br>0x4E</td><td class=demo>&#78;</td>
-<td class=code>&amp;#86<br>126<br>0x56</td><td class=demo>&#86;</td>
-<td class=code>&amp;#94<br>136<br>0x5E</td><td class=demo>&#94;</td>
-<td class=code>&amp;#102<br>146<br>0x66</td><td class=demo>&#102;</td>
-<td class=code>&amp;#110<br>156<br>0x6E</td><td class=demo>&#110;</td>
-<td class=code>&amp;#118<br>166<br>0x76</td><td class=demo>&#118;</td>
-<td class=code>&amp;#126<br>176<br>0x7E</td><td class=demo>&#126;</td>
+<tr><td class=code>&amp;#6;<br>\006&nbsp;<br>0x06&nbsp;</td><td class=demo>&#9222;</td>
+<td class=code>&amp;#14;<br>\016&nbsp;<br>0x0E&nbsp;</td><td class=demo>&#9230;</td>
+<td class=code>&amp;#22;<br>\026&nbsp;<br>0x16&nbsp;</td><td class=demo>&#9238;</td>
+<td class=code>&amp;#30;<br>\036&nbsp;<br>0x1E&nbsp;</td><td class=demo>&#9246;</td>
+<td class=code>&amp;#38;<br>\046&nbsp;<br>0x26&nbsp;</td><td class=demo>&#38;</td>
+<td class=code>&amp;#46;<br>\056&nbsp;<br>0x2E&nbsp;</td><td class=demo>&#46;</td>
+<td class=code>&amp;#54;<br>\066&nbsp;<br>0x36&nbsp;</td><td class=demo>&#54;</td>
+<td class=code>&amp;#62;<br>\076&nbsp;<br>0x3E&nbsp;</td><td class=demo>&#62;</td>
+<td class=code>&amp;#70;<br>\106&nbsp;<br>0x46&nbsp;</td><td class=demo>&#70;</td>
+<td class=code>&amp;#78;<br>\116&nbsp;<br>0x4E&nbsp;</td><td class=demo>&#78;</td>
+<td class=code>&amp;#86;<br>\126&nbsp;<br>0x56&nbsp;</td><td class=demo>&#86;</td>
+<td class=code>&amp;#94;<br>\136&nbsp;<br>0x5E&nbsp;</td><td class=demo>&#94;</td>
+<td class=code>&amp;#102;<br>\146&nbsp;<br>0x66&nbsp;</td><td class=demo>&#102;</td>
+<td class=code>&amp;#110;<br>\156&nbsp;<br>0x6E&nbsp;</td><td class=demo>&#110;</td>
+<td class=code>&amp;#118;<br>\166&nbsp;<br>0x76&nbsp;</td><td class=demo>&#118;</td>
+<td class=code>&amp;#126;<br>\176&nbsp;<br>0x7E&nbsp;</td><td class=demo>&#126;</td>
 </tr>
-<tr><td class=code>&amp;#7<br>007<br>0x07</td><td class=demo>&#9223;</td>
-<td class=code>&amp;#15<br>017<br>0x0F</td><td class=demo>&#9231;</td>
-<td class=code>&amp;#23<br>027<br>0x17</td><td class=demo>&#9239;</td>
-<td class=code>&amp;#31<br>037<br>0x1F</td><td class=demo>&#9247;</td>
-<td class=code>&amp;#39<br>047<br>0x27</td><td class=demo>&#39;</td>
-<td class=code>&amp;#47<br>057<br>0x2F</td><td class=demo>&#47;</td>
-<td class=code>&amp;#55<br>067<br>0x37</td><td class=demo>&#55;</td>
-<td class=code>&amp;#63<br>077<br>0x3F</td><td class=demo>&#63;</td>
-<td class=code>&amp;#71<br>107<br>0x47</td><td class=demo>&#71;</td>
-<td class=code>&amp;#79<br>117<br>0x4F</td><td class=demo>&#79;</td>
-<td class=code>&amp;#87<br>127<br>0x57</td><td class=demo>&#87;</td>
-<td class=code>&amp;#95<br>137<br>0x5F</td><td class=demo>&#95;</td>
-<td class=code>&amp;#103<br>147<br>0x67</td><td class=demo>&#103;</td>
-<td class=code>&amp;#111<br>157<br>0x6F</td><td class=demo>&#111;</td>
-<td class=code>&amp;#119<br>167<br>0x77</td><td class=demo>&#119;</td>
-<td class=code>&amp;#127<br>177<br>0x7F</td><td class=demo>&#127;</td>
+<tr><td class=code>&amp;#7;<br>\007&nbsp;<br>0x07&nbsp;</td><td class=demo>&#9223;</td>
+<td class=code>&amp;#15;<br>\017&nbsp;<br>0x0F&nbsp;</td><td class=demo>&#9231;</td>
+<td class=code>&amp;#23;<br>\027&nbsp;<br>0x17&nbsp;</td><td class=demo>&#9239;</td>
+<td class=code>&amp;#31;<br>\037&nbsp;<br>0x1F&nbsp;</td><td class=demo>&#9247;</td>
+<td class=code>&amp;#39;<br>\047&nbsp;<br>0x27&nbsp;</td><td class=demo>&#39;</td>
+<td class=code>&amp;#47;<br>\057&nbsp;<br>0x2F&nbsp;</td><td class=demo>&#47;</td>
+<td class=code>&amp;#55;<br>\067&nbsp;<br>0x37&nbsp;</td><td class=demo>&#55;</td>
+<td class=code>&amp;#63;<br>\077&nbsp;<br>0x3F&nbsp;</td><td class=demo>&#63;</td>
+<td class=code>&amp;#71;<br>\107&nbsp;<br>0x47&nbsp;</td><td class=demo>&#71;</td>
+<td class=code>&amp;#79;<br>\117&nbsp;<br>0x4F&nbsp;</td><td class=demo>&#79;</td>
+<td class=code>&amp;#87;<br>\127&nbsp;<br>0x57&nbsp;</td><td class=demo>&#87;</td>
+<td class=code>&amp;#95;<br>\137&nbsp;<br>0x5F&nbsp;</td><td class=demo>&#95;</td>
+<td class=code>&amp;#103;<br>\147&nbsp;<br>0x67&nbsp;</td><td class=demo>&#103;</td>
+<td class=code>&amp;#111;<br>\157&nbsp;<br>0x6F&nbsp;</td><td class=demo>&#111;</td>
+<td class=code>&amp;#119;<br>\167&nbsp;<br>0x77&nbsp;</td><td class=demo>&#119;</td>
+<td class=code>&amp;#127;<br>\177&nbsp;<br>0x7F&nbsp;</td><td class=demo>&#9249;</td>
 </tr></table>
+</body>
+</html>
