@@ -1,0 +1,189 @@
+#!/usr/bin/perl
+#
+# usb-mount - Decrypt and mount LUKS-encrypted USB drives
+#
+# Copyright (c) 2013 nandhp <nandhp@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+=head1 NAME
+
+usb-mount, usb-eject - Mount (or unmount) encrypted USB drives
+
+=head1 SYNOPSIS
+
+usb-mount [I<options>] [I<name> ...]
+
+usb-eject [I<options>] [I<name> ...]
+
+usb-mount [I<options>] --all
+
+usb-eject [I<options>] --all
+
+=head1 OPTIONS
+
+=over
+
+=item --all, -a
+
+Mount (or unmount) all filesystems in usbtab
+
+=back
+
+=head1 FILES
+
+=over
+
+=item F<~/.usbtab>
+
+Contains a list of filesystems: device, name, keyfile, and options.
+Here is an example F<~/.usbtab> file for a single partition:
+
+  # device                                 name   keyfile    options
+  /dev/disk/by-id/usb-ACME_RL42XAN9-part1  usbhd  ~/.usbkey  auto
+
+=back
+
+=head1 SEE ALSO
+
+L<cryptsetup(8)>, L<mount(8)>, L<umount(8)>, L<fstab(5)>, L<sudo(8)>
+
+=cut
+
+use Getopt::Long;
+use Pod::Usage;
+use warnings;
+use strict;
+
+# Configure usbtab location
+my $USBTAB = "$ENV{HOME}/.usbtab";
+my ($SUDO_CRYPTSETUP, $SUDO_MOUNT) = ('sudo', 'env');
+
+my @messages = ('Error', 'OK', '(reassurance)');
+my %reassurance = ('main::decrypt_fs' => 'Already decrypted',
+                 'main::mount_fs' => 'Already mounted',
+                 'main::encrypt_fs' => 'Not decrypted',
+                 'main::unmount_fs' => 'Not mounted');
+
+my %usb = ();
+parse_usbtab($USBTAB);
+
+sub parse_usbtab {
+    my ($file) = @_;
+    open my $f, '<', $file or die "Can't open $file: $!\n";
+    while (<$f>) {
+        next if m/^[#;!]/;
+        s/[\r\n]*$//;
+        my ($device, $name, $keyfile, $options) = split;
+        $keyfile =~ s/^~([^\/\\]*)/(getpwnam( $1 || $ENV{USER} ))[7]/e;
+        $usb{$device} = {name => $name, keyfile => $keyfile,
+                         options => $options};
+    }
+    close $f;
+}
+
+# Handle command-line
+my $do_mount = 1;
+my $mount_all = 0;
+unshift @ARGV, '--eject' if $0 =~ m/(un?mount|eject)$/;
+GetOptions("all|a" => \$mount_all,
+           "mount" => \$do_mount,
+           "unmount|umount|eject" => sub { $do_mount = 0 },
+           "help" => sub { pod2usage(1) }) or pod2usage(2);
+pod2usage(1) if $mount_all and @ARGV;
+my @requests = @ARGV ? map { find_device($_) } @ARGV :
+    grep { $mount_all or ($usb{$_}{options} =~ m/auto/) } keys %usb;
+
+# (Un)mount requested filesystems
+foreach my $id ( @requests ) {
+    if ( $do_mount ) {
+        print "Mounting $usb{$id}{name}...\n";
+        decrypt_fs($id) and mount_fs($id);
+    }
+    else {
+        print "Unmounting $usb{$id}{name}...\n";
+        unmount_fs($id) and encrypt_fs($id);
+    }
+}
+unless ( $do_mount ) {
+    print "Syncing disks...\n";
+    system('sync');
+}
+
+sub find_device {
+    my ($name) = @_;
+    foreach ( keys %usb ) {
+        return $_ if $usb{$_}{name} eq $name;
+    }
+    die "Unknown device: $name\n";
+}
+
+sub is_mounted {
+    my ($id) = @_;
+    open my $f, '<', '/proc/mounts';
+    while (<$f>) {
+        m/^(\S+)\s+(\S+)/ or next;
+        return $2 if $1 eq $id or $1 eq "/dev/mapper/$usb{$id}{name}";
+    }
+    return undef;
+}
+sub print_msg {
+    my ($rc) = @_;
+    my $msg = $messages[$rc];
+    $msg = $reassurance{(caller(1))[3]} if $msg =~ m/reassur/;
+    print "  $msg\n";
+    return $rc;
+}
+sub decrypt_fs {
+    my ($id) = @_;
+    return print_msg(2) if -e "/dev/mapper/$usb{$id}{name}";
+    my @args = ($SUDO_CRYPTSETUP, 'cryptsetup', 'luksOpen',
+                "--key-file=$usb{$id}{keyfile}", $id, $usb{$id}{name});
+    push @args, '--readonly' if $usb{$id}{options} =~ m/readonly/;
+    return print_msg(system(@args) == 0 ? 1 : 0);
+}
+sub encrypt_fs {
+    my ($id) = @_;
+    return print_msg(2) unless -e "/dev/mapper/$usb{$id}{name}";
+    my @args = ($SUDO_CRYPTSETUP, 'cryptsetup', 'luksClose', $usb{$id}{name});
+    return print_msg(system(@args) == 0 ? 1 : 0);
+}
+sub mount_fs {
+    my ($id) = @_;
+    return print_msg(2) if is_mounted($id);
+    my @args = ($SUDO_MOUNT, 'mount', "/dev/mapper/$usb{$id}{name}");
+    return print_msg(system(@args) == 0 ? 1 : 0);
+}
+sub unmount_fs {
+    my ($id) = @_;
+    my $mountpoint = is_mounted($id);
+    return print_msg(2) unless $mountpoint;
+    my $rc = system($SUDO_MOUNT, 'umount', $mountpoint);
+    system('fuser', '-m', $mountpoint) if $rc;
+    return print_msg($rc == 0 ? 1 : 0);
+}
