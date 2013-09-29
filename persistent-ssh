@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# persistent-ssh - Establish a persistent SSH connection
+#
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <file>"
+    exit 2
+fi
+
+while true; do
+    NOW=$(date +%s)
+    echo "$0: $1 connecting..."
+    ssh -oServerAliveInterval=10 $(grep -v '^#' $1)
+    [ $(($(date +%s)-$NOW)) -lt 30 ] && sleep 30
+done
