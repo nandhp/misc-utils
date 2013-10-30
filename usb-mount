@@ -37,21 +37,35 @@ usb-mount, usb-eject - Mount (or unmount) encrypted USB drives
 
 =head1 SYNOPSIS
 
-usb-mount [I<options>] [I<name> ...]
+B<usb-mount> [I<options>] [I<name> ...]
 
-usb-eject [I<options>] [I<name> ...]
+B<usb-eject> [I<options>] [I<name> ...]
 
-usb-mount [I<options>] --all
+B<usb-mount> [I<options>] {B<--all>|B<--auto>}
 
-usb-eject [I<options>] --all
+B<usb-eject> [I<options>] {B<--all>|B<--auto>}
 
 =head1 OPTIONS
 
 =over
 
-=item --all, -a
+=item B<--all>, B<-a>
 
 Mount (or unmount) all filesystems in usbtab
+(default for B<usb-eject>)
+
+=item B<--auto>
+
+Mount (or unmount) filesystems list as C<auto> in usbtab
+(default for B<usb-mount>)
+
+=item B<--mount>
+
+Behave as if the command were invoked as B<usb-mount>, even if it wasn't.
+
+=item B<--eject>, B<--unmount>, B<--umount>
+
+Behave as if the command were invoked as B<usb-eject>, even if it wasn't.
 
 =back
 
@@ -109,15 +123,18 @@ sub parse_usbtab {
 
 # Handle command-line
 my $do_mount = 1;
-my $mount_all = 0;
+my $mount_all = 0;              # 1 = all, -1 = auto, 0 = heuristic
 unshift @ARGV, '--eject' if $0 =~ m/(un?mount|eject)$/;
-GetOptions("all|a" => \$mount_all,
-           "mount" => \$do_mount,
+GetOptions("all|a" => sub { $mount_all = 1 },
+           "auto" => sub { $mount_all = -1 },
+           "mount" => sub { $do_mount = 1 },
            "unmount|umount|eject" => sub { $do_mount = 0 },
            "help" => sub { pod2usage(1) }) or pod2usage(2);
 pod2usage(1) if $mount_all and @ARGV;
+# Heuristic: Mount "auto" filesystems, unmount all filesystems.
+$mount_all =  $do_mount ? -1 : 1 unless $mount_all;
 my @requests = @ARGV ? map { find_device($_) } @ARGV :
-    grep { $mount_all or ($usb{$_}{options} =~ m/auto/) } keys %usb;
+    grep { ($mount_all > 0) or ($usb{$_}{options} =~ m/auto/) } keys %usb;
 
 # (Un)mount requested filesystems
 foreach my $id ( @requests ) {
