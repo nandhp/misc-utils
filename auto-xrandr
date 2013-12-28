@@ -1,0 +1,39 @@
+#!/usr/bin/perl
+#
+# auto-xrandr - Automatically configure xrandr
+#
+
+my $INTERNAL = 'eDP1';
+my $EXTERNAL = 'DP1';
+
+my $current = `xrandr`;
+
+# Load configuration of internal display
+$current =~ m/^$INTERNAL (connected (\d+)x(\d+)\+(\d+)\+(\d+)|\S+)/m or
+    die "xrandr parse error $INTERNAL";
+my ($iw, $ih) = ($2, $3);
+if ( !defined($iw) ) {
+    $iw = $ih = 0;
+    warn "Internal display is off";
+}
+else {
+    warn "Internal display not at +0+0" if $4 ne 0 or $5 ne 0;
+}
+
+# Determine state of external display
+$current =~ m/^$EXTERNAL (connected (\d+)x(\d+)\+(\d+)\+(\d+)|\S+)(?:.*\s*(?:^ +.*\s*)*^ +(\d+x\d+).*\+)?/m or
+    die "xrandr parse error: $EXTERNAL";
+my $epresent = $1 ne 'disconnected';
+
+# Alternate between mirror and extend
+my $emirror = (defined($2) and ($4 ne '0' or $5 ne '0'));
+
+# Formulate an xrandr command
+my @cmd = ('xrandr', '--output', $EXTERNAL, $epresent ? (
+               ($6 ? ('--mode', $6) : '--auto'),
+               '--pos', ($emirror ? 0 : $iw) . 'x0'
+           ) : (
+               '--off', '--output', $INTERNAL, '--auto'
+           ));
+print join(' ', @cmd), "\n";
+system @cmd;
