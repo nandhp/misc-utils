@@ -1,8 +1,27 @@
 #!/usr/bin/env python
 
-"""nandhp-volumed - ThinkPad-style volume control with libnotify feedback.
+"""nandhp-volumed - Sophisticated volume control with libnotify feedback.
 
-Exposes a DBus interface that can be triggered from the command-line."""
+Exposes a DBus interface that can be triggered from the command-line.
+
+For ThinkPad-style volume control, configure your keybindings as follows:
+  Mute            nandhp-volumed --mute
+  Volume Up       nandhp-volumed --unmute --volume +10
+  Volume Down     nandhp-volumed --unmute --volume -10
+
+Alternate "no suprises" keybindings:
+  Mute            nandhp-volumed --mute
+  Alt+Mute        nandhp-volumed --unmute
+  Volume Up       nandhp-volumed --volume +10
+  Volume Down     nandhp-volumed --volume -10
+
+Sample ~/.nandhp-volumed file for selecting which mixer control(s) to adjust:
+
+  [Mixers]
+  Volume=Master
+  Mute=Speaker
+
+"""
 
 import pynotify
 import gobject
@@ -10,18 +29,25 @@ import argparse
 import dbus, dbus.service, dbus.mainloop.glib
 from alsaaudio import Mixer
 
+# Configuration; overridden in ~/.nandhp-volumed
+
 # The mixer to use for volume up and down.
 VOL_MIXER = 'Master'
-
 # The mixer to use for volume mute. (You could have this different
 # from vol_mixer if you don't want mute to affect headphones.)
 MUTE_MIXER = 'Speaker'
 
+# FIXME: Configure which audio device to control
+
+# Magic value for toggling mute
+MUTE_TOGGLE = 42
+
 class Notifier(object):
     """Manage creation and update of a balloon notification."""
-    def __init__(self):
+    def __init__(self, closenotify=None):
         pynotify.init('nandhp-volumed')
         self.nobj = None
+        self.closenotify = closenotify
 
     def notify(self, value, muted):
         """Display a volume status balloon notification."""
@@ -53,27 +79,43 @@ class Notifier(object):
     def _onclosed(self, nparam):
         """Event handler for balloon notification closure."""
         self.nobj = None
+        if self.closenotify:
+            self.closenotify()
 
-n = None
+def _mute(mutemixer, volmixer, do_mute):
+    """Internal function for setting the mute status of the MUTE_MIXER."""
+    if do_mute == MUTE_TOGGLE:
+        do_mute = not Mixer(MUTE_MIXER).getmute()[0]
+    do_mute = True if do_mute else False
+    mutemixer.setmute(do_mute)
+    if not do_mute:
+        # Unmute the volume mixer, just in case.
+        volmixer.setmute(False)
+    return do_mute
 
 def mute(do_mute=True):
     """Set the mute status of the MUTE_MIXER to do_mute."""
-    Mixer(MUTE_MIXER).setmute(do_mute)
-    return Mixer(VOL_MIXER).getvolume()[0], do_mute
+    volmixer = Mixer(VOL_MIXER)
+    mutemixer = Mixer(MUTE_MIXER)
+    do_mute = _mute(mutemixer, volmixer, do_mute)
+    return volmixer.getvolume()[0], do_mute
 
-def volume(value=None, delta=None):
+def volume(value=None, delta=None, do_mute=False):
     """Unmute and set the volume status of the VOL_MIXER to value,
     adjusted by delta."""
-    mixer = Mixer(VOL_MIXER)
+    volmixer = Mixer(VOL_MIXER)
+    mutemixer = Mixer(MUTE_MIXER)
     if value is None:
-        value = mixer.getvolume()[0]
+        value = volmixer.getvolume()[0]
     if delta:
         value += delta
-    mixer.setvolume(min(max(value, 0), 100))
-    mixer.setmute(False)
-    Mixer(MUTE_MIXER).setmute(False)
+    volmixer.setvolume(min(max(value, 0), 100))
+    if do_mute is not None:
+        muted = _mute(mutemixer, volmixer, do_mute)
+    else:
+        muted = mutemixer.getmute()[0]
     # Return value -1 or 101 to undicate underflow or overflow, respectively
-    return value, False
+    return value, muted
 
 # Based on http://www.eurion.net/python-snippets/snippet/Single%20Instance.html
 # By Simon Vermeersch <simonvermeersch@gmail.com>, GPL.
@@ -84,10 +126,18 @@ class DBusService(dbus.service.Object):
     changes. (For example, one that might be executed in response to a
     keypress.)"""
 
-    def __init__(self):
+    def __init__(self, mainloop, timeout=False):
         name = dbus.service.BusName(DBUS_NAME, bus=dbus.SessionBus())
         dbus.service.Object.__init__(self, name, DBUS_PATH)
-        self.notifier = Notifier()
+        self.mainloop = mainloop
+        self.timeout = timeout
+        self.notifier = Notifier(closenotify=self.on_notifyclose)
+
+    def on_notifyclose(self):
+        """Callback for when the Notifier balloon is closed."""
+        if self.timeout:
+            self.remove_from_connection()
+            self.mainloop.quit()
 
     @dbus.service.method(dbus_interface=DBUS_NAME)
     def mute(self):
@@ -102,20 +152,45 @@ class DBusService(dbus.service.Object):
         self.notifier.notify(value, muted)
 
     @dbus.service.method(dbus_interface=DBUS_NAME)
-    def volume(self, value):
-        """Adjust the volume to value."""
-        value, muted = volume(value=value)
-        self.notifier.notify(value, muted)
-        
-    @dbus.service.method(dbus_interface=DBUS_NAME)
-    def volume_adjust(self, delta):
-        """Adjust the volume by delta."""
-        value, muted = volume(delta=delta)
+    def toggle_mute(self):
+        """Toggle the muting the volume."""
+        value, muted = mute(MUTE_TOGGLE)
         self.notifier.notify(value, muted)
 
-ACTIONS = {'mute': lambda: mute(True), 'unmute': lambda: mute(False),
-           'volume': lambda value: volume(value=value),
-           'volume_adjust': lambda delta: volume(delta=delta)}
+    @dbus.service.method(dbus_interface=DBUS_NAME)
+    def set_mute(self, value):
+        """Set the muting state."""
+        value, muted = mute(value)
+        self.notifier.notify(value, muted)
+
+    @dbus.service.method(dbus_interface=DBUS_NAME)
+    def volume(self, value, muting=None):
+        """Adjust the volume to value."""
+        value, muted = volume(value=value, do_mute=muting)
+        self.notifier.notify(value, muted)
+
+    @dbus.service.method(dbus_interface=DBUS_NAME)
+    def volume_adjust(self, delta, muting=None):
+        """Adjust the volume by delta."""
+        value, muted = volume(delta=delta, do_mute=muting)
+        self.notifier.notify(value, muted)
+
+def load_config():
+    """Load user configuration file."""
+    import os.path
+    import ConfigParser
+    parser = ConfigParser.SafeConfigParser()
+    configfile = os.path.expanduser('~/.nandhp-volumed')
+    parser.read(configfile)
+    global VOL_MIXER, MUTE_MIXER
+    try:
+        VOL_MIXER = parser.get('Mixers', 'Volume')
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        pass
+    try:
+        MUTE_MIXER = parser.get('Mixers', 'Mute')
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        MUTE_MIXER = VOL_MIXER
 
 def main():
     """Main function for command-line invocation."""
@@ -128,33 +203,55 @@ def main():
             setattr(namespace, self.dest, [action, int(values[0])])
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mute', action='store_const', dest='action',
-                        const=['mute'], help='Set mute.')
-    parser.add_argument('--unmute', action='store_const', dest='action',
-                        const=['unmute'], help='Unset mute.')
+    parser.add_argument('--mute', action='store_const', dest='muting',
+                        const=True, help='Set mute.')
+    parser.add_argument('--unmute', action='store_const', dest='muting',
+                        const=False, help='Unset mute.')
+    parser.add_argument('--toggle-mute', action='store_const', dest='muting',
+                        const=MUTE_TOGGLE, help='Toggle the mute state.')
     parser.add_argument('--volume', nargs=1, action=VolAction, dest='action',
-                        help='Set volume: number, +number, or -number.')
-    result = parser.parse_args()
-    action_func = None
+                        metavar='VOLUME',
+                        help='Set volume to NUMBER, or adjust it by ' + \
+                            '+NUMBER or -NUMBER. Can be used in ' + \
+                            'conjunction with a mute option.')
+    parser.add_argument('--daemon', action='store_true',
+                        help='Run as daemon.')
+    parser.add_argument('--timeout', action='store_true',
+                        help='Daemon exits while inactive.')
+    args = parser.parse_args()
 
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    if dbus.SessionBus().request_name(DBUS_NAME) != \
-            dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
-        if result.action:
-            instance = dbus.SessionBus().get_object(DBUS_NAME, DBUS_PATH)
-            action_func = instance.get_dbus_method(result.action[0])
+    # Check for conflicts in the command-line arguments
+    do_volume = args.muting is not None or args.action
+    if do_volume and args.daemon:
+        parser.error('--daemon cannot be used with a volume action')
+    elif do_volume and args.timeout:
+        parser.error('--timeout can only be used with --daemon')
+
+    load_config()
+
+    if args.daemon:
+        # Run as a daemon
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        if dbus.SessionBus().request_name(DBUS_NAME) == \
+                dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
+            mainloop = gobject.MainLoop()
+            service = DBusService(mainloop=mainloop, timeout=args.timeout)
+            mainloop.run()
         else:
             print "Daemon already running."
-            return
-    elif result.action:
-        action_func = ACTIONS[result.action[0]]
-    if action_func:
-        action_func(*result.action[1:])
         return
-
-    # Operate as a daemon
-    service = DBusService()
-    gobject.MainLoop().run()
+    elif do_volume:
+        # Connect to the daemon
+        instance = dbus.SessionBus().get_object(DBUS_NAME, DBUS_PATH)
+        # Adjust the volume
+        do_mute = args.muting
+        action = args.action if args.action else ['set_mute']
+        if do_mute is not None:
+            action += [do_mute]
+        action_func = instance.get_dbus_method(action[0])
+        action_func(*action[1:])
+    else:
+        parser.error('no action specified')
 
 if __name__ == '__main__':
     main()
