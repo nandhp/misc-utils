@@ -182,15 +182,24 @@ def load_config():
     parser = ConfigParser.SafeConfigParser()
     configfile = os.path.join(glib.get_user_config_dir(), 'nandhp-volumed')
     parser.read(configfile)
+    try:
+        volmixer = parser.get('Mixers', 'Volume')
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        volmixer = None
+    try:
+        mutemixer = parser.get('Mixers', 'Mute')
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        mutemixer = None
+    # Default values if both are not specified
+    if volmixer:
+        mutemixer = mutemixer if mutemixer else volmixer
+    elif mutemixer:
+        volmixer = volmixer if volmixer else VOL_MIXER
+    else:
+        return
+    # Set the new values
     global VOL_MIXER, MUTE_MIXER
-    try:
-        VOL_MIXER = parser.get('Mixers', 'Volume')
-    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
-        pass
-    try:
-        MUTE_MIXER = parser.get('Mixers', 'Mute')
-    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
-        MUTE_MIXER = VOL_MIXER
+    VOL_MIXER = volmixer, MUTE_MIXER = mutemixer
 
 def main():
     """Main function for command-line invocation."""
