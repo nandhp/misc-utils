@@ -15,7 +15,7 @@ Alternate "no suprises" keybindings:
   Volume Up       nandhp-volumed --volume +10
   Volume Down     nandhp-volumed --volume -10
 
-Sample ~/.nandhp-volumed file for selecting which mixer control(s) to adjust:
+Sample ~/.config/nandhp-volumed file for setting mixer control(s) to adjust:
 
   [Mixers]
   Volume=Master
@@ -24,12 +24,12 @@ Sample ~/.nandhp-volumed file for selecting which mixer control(s) to adjust:
 """
 
 import pynotify
-import gobject
+import gobject, glib
 import argparse
 import dbus, dbus.service, dbus.mainloop.glib
 from alsaaudio import Mixer
 
-# Configuration; overridden in ~/.nandhp-volumed
+# Configuration; overridden in ~/.config/nandhp-volumed
 
 # The mixer to use for volume up and down.
 VOL_MIXER = 'Master'
@@ -180,7 +180,7 @@ def load_config():
     import os.path
     import ConfigParser
     parser = ConfigParser.SafeConfigParser()
-    configfile = os.path.expanduser('~/.nandhp-volumed')
+    configfile = os.path.join(glib.get_user_config_dir(), 'nandhp-volumed')
     parser.read(configfile)
     global VOL_MIXER, MUTE_MIXER
     try:
