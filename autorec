@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# autorec - Record from the microphone to a timestamped file.
+#
+
+EXT=mp3 SOXOPTS="$SOXOPTS -C 32"
+OUTFILE=~/Recordings/$(date +%Y-%m-%d_%H%M%S).$EXT
+
+mkdir -p "$(dirname "$OUTFILE")"
+
+# MacBookAir5,2 Workaround: No input after sound card leaves
+# power-saving mode. Resolve by adjusting Capture volume control.
+(amixer set 'Capture' 0%;amixer set 'Capture' 100%) >/dev/null
+
+# MacBookAir5,2 Workaround: Mono microphone is on right channel, not
+# left; results in silence for monaural recordings.
+export AUDIODEV="swapped"
+
+# Do the recording
+rec -c 1 $SOXOPTS "$OUTFILE"
+ls -lh "$OUTFILE"

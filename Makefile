@@ -3,11 +3,20 @@ BIN = $(PREFIX)/bin
 MAN = $(PREFIX)/share/man
 DBUSSERVICES = $(PREFIX)/share/dbus-1/services
 
-all: nandhp-volumed.all usb-mount.all
-clean: nandhp-volumed.clean usb-mount.clean
+all: \
+	nandhp-volumed.all \
+	usb-mount.all
+clean: \
+	nandhp-volumed.clean \
+	usb-mount.clean
 
-install: auto-xrandr.install calc.install nandhp-volumed.install \
-	 hires-date.install usb-mount.install
+install: \
+	auto-xrandr.install \
+	autorec.install \
+	calc.install \
+	nandhp-volumed.install \
+	hires-date.install \
+	usb-mount.install
 
 # usb-mount
 usb-mount.all: usb-mount.1
