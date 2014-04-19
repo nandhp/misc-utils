@@ -1,0 +1,28 @@
+#!equivs-build
+
+### Commented entries have reasonable defaults.
+### Uncomment to edit them.
+# Source: <source package name; defaults to package name>
+Section: misc
+Priority: optional
+# Homepage: <enter URL here; no default>
+Standards-Version: 3.9.2
+
+Package: mate-dialogs-zenity-compat
+Version: 1.0
+Maintainer: nandhp <nandhp@gmail.com>
+# Pre-Depends: <comma-separated list of packages>
+# Depends: <comma-separated list of packages>
+# Recommends: <comma-separated list of packages>
+# Suggests: <comma-separated list of packages>
+Provides: zenity
+Replaces: zenity
+Conflicts: zenity
+# Architecture: all
+Copyright: ../COPYING
+# Changelog: <changelog file; defaults to a generic changelog>
+# Readme: <README.Debian file; defaults to a generic one>
+# Extra-Files: <comma-separated list of additional files for the doc directory>
+Files: zenity /usr/bin
+#  <more pairs, if there's more than one file to include. Notice the starting space>
+Description: Use matedialog instead of Zenity
