@@ -1,4 +1,38 @@
-#!/bin/sh
+#!/bin/bash
+#
+# diff-webpages.sh - Report on changes to webpages
+#
+
+usage() {
+    cat <<EOF >&2
+Usage: $0 [-l] <url> [...]
+
+  -l        Preprocess diff input with lynx(1) (don't output HTML)
+EOF
+}
+
+LYNX='lynx -dump -stdin -nolist'
+USE_LYNX=
+
+# Parse command-line flags
+while getopts hl OPTNAME; do
+    case "$OPTNAME" in
+        l)
+            USE_LYNX=1
+            ;;
+        *)
+            usage
+            exit 2
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+# Ensure at least one URL is provided
+if [ "$#" -le 0 ]; then
+    usage
+    exit 1
+fi
 
 CACHEDIR=~/.cache/diff-webpages
 [ -d "$CACHEDIR" ] || mkdir "$CACHEDIR" || exit 1
@@ -14,6 +48,7 @@ for URL in "$@"; do
         continue
     fi
 
+    # Compare the checksum, size, and modification date
     OLDSUM=$(md5sum "$CACHEFILE" | cut -d' ' -f1)
     OLDLEN=$(wc -c "$CACHEFILE" | cut -d' ' -f1)
     OLDDAY=$(date -d @$(stat --format %Y "$CACHEFILE"))
@@ -22,9 +57,16 @@ for URL in "$@"; do
     NEWDAY=$(date -d @$(stat --format %Y "$TEMPFILE"))
 
     if [ "$OLDSUM" != "$NEWSUM" ] || [ "$OLDLEN" != "$NEWLEN" ]; then
+        # Report the change
         printf "%s\n  %s => %s\n  %32s    %32s\n  %32d    %32d\n\n" \
             "$URL" "$OLDSUM" "$NEWSUM" "$OLDDAY" "$NEWDAY" "$OLDLEN" "$NEWLEN"
-        diff -u "$CACHEFILE" "$TEMPFILE"
+
+        # Provide a diff
+        if [ -n "$USE_LYNX" ]; then
+            diff -u <($LYNX < "$CACHEFILE") <($LYNX < "$TEMPFILE")
+        else
+            diff -u "$CACHEFILE" "$TEMPFILE"
+        fi
         printf "\n"
     fi
     mv "$TEMPFILE" "$CACHEFILE"
