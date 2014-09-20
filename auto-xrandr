@@ -27,13 +27,36 @@ my $epresent = $1 ne 'disconnected';
 
 # Alternate between mirror and extend
 my $emirror = (defined($2) and ($4 ne '0' or $5 ne '0'));
+my $emode = $6;
 
 # Formulate an xrandr command
 my @cmd = ('xrandr', '--output', $EXTERNAL, $epresent ? (
-               ($6 ? ('--mode', $6) : '--auto'),
+               ($emode ? ('--mode', $emode) : '--auto'),
                '--pos', ($emirror ? 0 : $iw) . 'x0'
            ) : (
                '--off', '--output', $INTERNAL, '--auto'
            ));
 print join(' ', @cmd), "\n";
 system @cmd;
+
+# Display status notification
+my $notifytitle = "External display";
+my $notifytext = $epresent ? ($emirror ? "Mirroring" : "Extending") .
+    ($emode ? " ($emode)" : " (automatic resolution)") : "Not connected";
+@cmd = ('notify-send', '-i', 'video-display', '-c', 'device',
+        $notifytitle, $notifytext);
+# @cmd = ('dbus-send', '--type=method_call', '--print-reply',
+#         '--dest=org.freedesktop.Notifications',
+#         '/org/freedesktop/Notifications',
+#         'org.freedesktop.Notifications.Notify',
+#         'string:RandR',         # Application
+#         'uint32:1',             # ID of notification to replace
+#         'string:video-display', # Icon
+#         'string:' . "External display",       # Notification title
+#         'string:' . $notifytext,              # Notification body
+#         'array:string:',                      # Actions
+#         'dict:string:string:category,device', # Hints
+#         'int32:-1',                           # Timeout (milliseconds)
+#     );
+system @cmd;
+# susssasa{ss}i
