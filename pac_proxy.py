@@ -205,7 +205,7 @@ def main():
     # Listen for HTTP connections
     factory.listenport = args.port
     print 'Listening on port %d' % (args.port,)
-    reactor.listenTCP(args.port, factory)
+    reactor.listenTCP(args.port, factory, interface="127.0.0.1")
     reactor.run()
 
 if __name__ == '__main__':
