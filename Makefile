@@ -16,6 +16,7 @@ install: \
 	calc.install \
 	nandhp-volumed.install \
 	hires-date.install \
+	toggle-wifi.install \
 	usb-mount.install
 
 # usb-mount
