@@ -179,6 +179,7 @@ def load_config():
     """Load user configuration file."""
     import os.path
     import ConfigParser
+    global VOL_MIXER, MUTE_MIXER
     parser = ConfigParser.SafeConfigParser()
     configfile = os.path.join(glib.get_user_config_dir(), 'nandhp-volumed')
     parser.read(configfile)
@@ -198,7 +199,6 @@ def load_config():
     else:
         return
     # Set the new values
-    global VOL_MIXER, MUTE_MIXER
     VOL_MIXER = volmixer, MUTE_MIXER = mutemixer
 
 def main():
