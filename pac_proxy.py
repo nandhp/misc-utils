@@ -76,6 +76,14 @@ class ServerProtocol(protocol.Protocol):
         self.negotiating = True
         self.greeting = ''
 
+    def connectionLost(self, reason):
+        """Handle loss of connection to remote server."""
+        msg = reason.getErrorMessage()
+        if msg != "Connection was closed cleanly.":
+            print "Connection closed:", msg
+        if self.client:
+            self.client.transport.loseConnection()
+
     def beginRelay(self, host, port):
         """Establish a client connection to remote host and relay traffic."""
         self.negotiating = False
