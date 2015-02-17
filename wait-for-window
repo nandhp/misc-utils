@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+#
+# wait-for-window - Wait for a window to appear (using wmctrl)
+#
+
+# FIXME: More options (timeout, interval, ...). Use Getopt::Long.
+# Document in POD; man page.
+
+use warnings;
+use strict;
+
+die "Usage: $0 [-p] <windowspec>\n    -p  Filter by PID, instead of title\n"
+    unless $ARGV[0];
+
+my $aspid = 0;
+if ( $ARGV[0] =~ m/-p/ ) {
+    $aspid = 1;
+    shift @ARGV;
+}
+
+my %windows = ();
+my $query = quotemeta $ARGV[0];
+my $interval = 0.25;
+my $timeout = 5/$interval;
+for ( my $i = 0; $i < $timeout; $i++ ) {
+    #print "Checking...\n";
+    foreach ( `wmctrl -lp` ) {
+        my ($id, @info) = split ' ', $_, 4;
+        if ( !exists($windows{$id}) ) {
+            if ( ( $aspid && $info[1] != $query ) ||
+                 ( !$aspid && $info[2] !~ /$query/ ) ) { next }
+            print "Found window $id\n";
+            if ( $i == 0 ) { $windows{$id} = 1 }
+            else { print "Raising $id\n"; exec 'wmctrl', '-i', '-a', $id }
+        }
+    }
+    select undef, undef, undef, $interval;
+}
+print "Timed out.\n";
+exit 1;
