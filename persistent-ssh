@@ -12,11 +12,11 @@ while true; do
     NOW=$(date +%s)
     echo "$0: $1 trying at $(date)"
     HOST=$(grep -Ev '^#|^$' "$1"|tail -n1)
-    if ping -c5 "$HOST" >/dev/null 2>&1; then
-        echo "$0: $1 connecting..."
-        ssh -oServerAliveInterval=10 $(grep -v '^#' "$1")
-    else
-        echo "$0: $1 returned no pings"
-    fi
+    #if ping -c5 "$HOST" >/dev/null 2>&1; then
+    echo "$0: $1 connecting..."
+    ssh -oServerAliveInterval=10 $(grep -v '^#' "$1")
+    #else
+    #    echo "$0: $1 returned no pings"
+    #fi
     [ $(($(date +%s)-$NOW)) -lt 30 ] && sleep 30
 done
