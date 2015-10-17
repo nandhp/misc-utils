@@ -14,6 +14,8 @@ import re
 import hashlib
 import argparse
 
+DEFAULT_PORTS = { 'http': ':80', 'https': ':443' }
+
 class PacManager(object):
     """Manage download of and lookup of URLs in PAC file."""
     def __init__(self, pacurl, interval=60):
@@ -65,6 +67,13 @@ class PacManager(object):
                              (self.pacurl,))
             sys.stderr.write(str(exc) + '\n')
 
+class DummyPacManager(object):
+    def __init__(self, pacurl=None, interval=None):
+        pass
+
+    def find_proxy_for_url(self, url):
+        return None
+
 REQUEST_MATCH = re.compile(r'([^\r\n]*).*?\r?\n\r?\n', re.DOTALL)
 
 class ServerProtocol(protocol.Protocol):
@@ -92,6 +101,15 @@ class ServerProtocol(protocol.Protocol):
         #print "Relaying to %s on port %d" % ( host, port )
         reactor.connectTCP(host, port, factory)
 
+    def verify_dest(self, dest):
+        host = dest[1] if ':' in dest[1] else dest[1] + DEFAULT_PORTS[dest[0]]
+        host, port = host.split(':')
+        port = int(port, 10)
+        if port == self.factory.listenport:
+            # FIXME: Check hostname? Return "it works" message?
+            return (None, None)
+        return (host, port)
+
     def dataReceived(self, data):
         """Handle data received from proxy client."""
         if self.negotiating:
@@ -101,6 +119,9 @@ class ServerProtocol(protocol.Protocol):
             if match:
                 self.negotiating = False
 
+                if self.factory.verbose:
+                    print match.group(0)
+
                 # Parse the request to determine the correct proxy to use
                 request = match.group(1).split()
                 request[0] = request[0].upper()
@@ -108,19 +129,18 @@ class ServerProtocol(protocol.Protocol):
                     request[1] = '//' + request[1]
 
                 # Parse HTTP headers for remote URL and Host
-                dest = urlparse.urlsplit(request[1], 'http')
+                dest = list(urlparse.urlsplit(request[1], 'http'))
                 for header in match.group(0).split('\n'):
                     if header.startswith('Host: '):
                         host = header[6:].strip()
-                        dest = urlparse.urlsplit(urlparse.urlunsplit(
-                            (dest[0], host) + dest[2:]))
+                        if any(self.verify_dest((dest[0], host))):
+                            dest[1] = host # Update hostname
                         break
 
-                # Remove extraneous default port
-                for proto, port in (('http', ':80'), ('https', ':443')):
+                # Insert default port
+                for proto, port in DEFAULT_PORTS.iteritems():
                     if dest[0] == proto and dest[1].endswith(port):
-                        dest = urlparse.urlsplit(urlparse.urlunsplit(
-                            (dest[0], dest[1][:-len(port)]) + dest[2:]))
+                        dest[1] = dest[1][:-len(port)] # Update hostname
 
                 # Determine proxy for request
                 url = urlparse.urlunsplit(dest)
@@ -137,17 +157,16 @@ class ServerProtocol(protocol.Protocol):
                     # Sending request directly to target server.
                     # Remove protocol and host from request URI.
                     self.buffer = self.buffer[len(match.group(1)):]
-                    request[1] = urlparse.urlunsplit(('', '') + dest[2:])
+                    request[1] = urlparse.urlunsplit(['', ''] + dest[2:])
                     self.buffer = ' '.join(request) + self.buffer
 
                 # Create relay connection
-                port = dest.port if dest.port else 80
-                print "%s: Using %s:%d" % (url, dest.hostname, port)
-                if port == self.factory.listenport:
-                    # FIXME: Check hostname? Return "it works" message?
+                host, port = self.verify_dest(dest)
+                if host is None:
                     raise Exception('Port banned to avoid loopback: %d' %
                                     (port,))
-                self.beginRelay(dest.hostname, port)
+                print "%s: Using %s:%d" % (url, host, port)
+                self.beginRelay(host, port)
 
             # HTTP request not yet complete, keep reading
             elif len(self.buffer) > 10*1024:
@@ -198,6 +217,8 @@ def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
         description='HTTP proxy that forwards requests using PAC file')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='Verbose output')
     parser.add_argument('-p', '--port', type=int, default=5043,
                         help='Port number to listen on')
     parser.add_argument('pacfile', type=str,
@@ -208,7 +229,8 @@ def main():
     factory = protocol.ServerFactory.forProtocol(ServerProtocol)
 
     # Create PAC Manager for given PAC file
-    factory.pacmgr = PacManager(args.pacfile)
+    factory.pacmgr = PacManager(args.pacfile) if args.pacfile else DummyPacManager()
+    factory.verbose = args.verbose
 
     # Listen for HTTP connections
     factory.listenport = args.port
