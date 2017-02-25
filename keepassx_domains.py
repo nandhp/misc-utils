@@ -4,6 +4,7 @@
 # formatted for grepping in a list of domains. Written for Cloudbleed.
 #
 # Usage:
+#   # Use KeepassX to create a CSV export /tmp/kpx.csv
 #   wget -O ~/Downloads/sites-using-cloudflare.zip https://github.com/pirate/sites-using-cloudflare/archive/master.zip
 #   python keepassx_domains.py < /tmp/kpx.csv > /tmp/kpx.sites
 #   unzip -c ~/Downloads/sites-using-cloudflare.zip sites-using-cloudflare-master/sorted_unique_cf.txt | grep -f /tmp/kpx.sites
