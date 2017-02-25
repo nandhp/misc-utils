@@ -3,6 +3,10 @@
 # Extract list of sites from a KeepassX CSV export. Output is
 # formatted for grepping in a list of domains. Written for Cloudbleed.
 #
+# This script makes some assumptions on how your Title and URL fields
+# are filled out, but if one or both is a URL or hostname, it should
+# work for you.
+#
 # Usage:
 #   # Use KeepassX to create a CSV export /tmp/kpx.csv
 #   wget -O ~/Downloads/sites-using-cloudflare.zip https://github.com/pirate/sites-using-cloudflare/archive/master.zip
