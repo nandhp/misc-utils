@@ -199,7 +199,7 @@ def load_config():
     else:
         return
     # Set the new values
-    VOL_MIXER = volmixer, MUTE_MIXER = mutemixer
+    VOL_MIXER, MUTE_MIXER = volmixer, mutemixer
 
 def main():
     """Main function for command-line invocation."""
